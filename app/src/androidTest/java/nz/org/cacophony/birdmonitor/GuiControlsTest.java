@@ -229,32 +229,4 @@ public class GuiControlsTest extends TestBaseStartingOnMainScreen {
         assertTrue(periodicallyUpdateGPS);
     }
 
-    @Test
-    public void rootedTest() {
-        prefs.setHasRootAccess(false);
-
-        onView(withId(R.id.btnAdvanced)).perform(click());
-        HelperCode.nowNavigateRightTimes(5);
-
-        onView(withId(R.id.swRooted)).check(matches(isNotChecked())); // warning sound should be off
-
-        // Now turn on
-        onView(withId(R.id.swRooted)).perform(click());  // to enable play warning sound
-        onView(withId(R.id.swRooted)).check(matches(isChecked())); // confirm it is checked
-        boolean isRooted = prefs.getHasRootAccess();
-        assertTrue(isRooted);
-        nowNavigateLeft(); // leave page
-        nowNavigateRight();  // return to page
-        // confirm that prefs and page are still correct
-        onView(withId(R.id.swRooted)).check(matches(isChecked()));
-        isRooted = prefs.getHasRootAccess();
-        assertTrue(isRooted);
-
-        // Turn off
-        onView(withId(R.id.swRooted)).perform(click()); // turn off
-        onView(withId(R.id.swRooted)).check(matches(isNotChecked())); //  should be off
-        isRooted = prefs.getHasRootAccess();
-        assertFalse(isRooted);
-    }
-
 }

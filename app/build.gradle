@@ -4,7 +4,7 @@ apply plugin: 'com.google.firebase.crashlytics'
 
 // Increased to 15 ie Android 4.03 Icecream sandwich  to allow debugging with instant run https://developer.android.com/studio/run/
 // Increated to 16 for firebase
-ext.minimumSdkVersion = 16
+ext.minimumSdkVersion = 23
 ext.versionMajor = 1
 ext.versionMinor = 9
 ext.versionPatch = 1
