@@ -23,6 +23,10 @@ allprojects {
     }
 }
 
+ext {
+    jacocoEnabled = System.properties.getProperty("jacocoEnabled") ?: "false"
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
