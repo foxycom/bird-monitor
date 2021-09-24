@@ -27,19 +27,13 @@ clean-all :
 	$(RM) -rv .traced
 	$(RM) -rv traces
 	$(RM) -rv app/src/carvedTest
+	$(RM) -rv .carved
 	$(RM) -rv espresso-tests-coverage unit-tests-coverage carved-test-coverage
 
 
 app-original.apk :
 	export ABC_CONFIG=$(ABC_CFG) && \
 	$(GW) -PjacocoEnabled=false assembleDebug && \
-	mv app/build/outputs/apk/debug/Bird-Monitor-1.9.1-debug.apk app-debug.apk && \
-	$(ABC) sign-apk app-debug.apk && \
-	mv -v app-debug.apk app-original.apk
-
-app-original-with-jacoco.apk :
-	export ABC_CONFIG=$(ABC_CFG) && \
-	$(GW) -PjacocoEnabled=true assembleDebug && \
 	mv app/build/outputs/apk/debug/Bird-Monitor-1.9.1-debug.apk app-debug.apk && \
 	$(ABC) sign-apk app-debug.apk && \
 	mv -v app-debug.apk app-original.apk
@@ -74,7 +68,7 @@ espresso-tests.log : app-original.apk app-androidTest.apk running-emulator
 
 # 	This is phony
 #    It depends on all the espresso files listed in the tests.txt file
-.traced : $(ESPRESSO_TESTS) app-androidTest.apk app-instrumented.apk running-emulator
+.traced : $(ESPRESSO_TESTS) app-androidTest.apk app-instrumented.apk
 	# Once execution of the dependent target is over we tear down the emulator
 	export ABC_CONFIG=$(ABC_CFG) && $(ABC) stop-all-emulators
 	$(RM) running-emulator
@@ -82,7 +76,9 @@ espresso-tests.log : app-original.apk app-androidTest.apk running-emulator
 
 # Note: https://stackoverflow.com/questions/9052220/hash-inside-makefile-shell-call-causes-unexpected-behaviour
 %.testlog: app-androidTest.apk app-instrumented.apk running-emulator
+	
 	$(eval FIRST_RUN := $(shell $(ADB) shell pm list packages | grep -c nz.org.cacophony.birdmonitor))
+	
 	@if [ "$(FIRST_RUN)" == "2" ]; then \
 		echo "Resetting the data of the apk"; \
 		$(ADB) shell pm clear nz.org.cacophony.birdmonitor; \
@@ -95,7 +91,7 @@ espresso-tests.log : app-original.apk app-androidTest.apk running-emulator
 	
 	$(eval TEST_NAME := $(shell echo "$(@)" | sed -e 's|__|\\\#|g' -e 's|.testlog||'))
 	 echo "Tracing test $(TEST_NAME)"
-	$(ADB) shell am instrument -w -e class $(TEST_NAME) nz.org.cacophony.birdmonitor.test/androidx.test.runner.AndroidJUnitRunner | tee $(@)
+	$(ADB) shell am instrument -w -e class $(TEST_NAME) nz.org.cacophony.birdmonitor.test/androidx.test.runner.AndroidJUnitRunner 2>&1 | tee $(@)
 	export ABC_CONFIG=$(ABC_CFG) && $(ABC) copy-traces nz.org.cacophony.birdmonitor ./traces/$(TEST_NAME) force-clean
 
 carve-all : .traced app-original.apk
@@ -105,10 +101,6 @@ carve-all : .traced app-original.apk
 carve-cached-traces : app-original.apk
 	export ABC_CONFIG=$(ABC_CFG) && \
 		$(ABC) carve-all app-original.apk traces app/src/carvedTest force-clean 2>&1 | tee carving.log
-
-# TODO We need to provide the shadows in some sort of generic way and avoid hardcoding them for each and every application, unless we can create them programmatically
-copy-shadows :
-	cp -v ./shadows/*.java app/src/carvedTest/nz/org/cacophony/birdmonitor
 
 # DO WE NEED THE SAME APPROACH AS ESPRESSO TESTS?
 run-all-carved-tests : app/src/carvedTest copy-shadows
@@ -121,16 +113,18 @@ run-all-carved-tests : app/src/carvedTest copy-shadows
 coverage-espresso-tests :
 	export ABC_CONFIG=$(ABC_CFG) && \
 	abc start-clean-emulator && \
-	$(GW) -PjacocoEnabled=true clean jacocoGUITestCoverage && \
+	$(GW) -PjacocoEnabled=true -PcarvedTests=false clean jacocoGUITestCoverage && \
 	mkdir -p espresso-test-coverage && \
-	cp -r app/build/reports/jacoco/jacocoGUITestCoverage espresso-test-coverage && \
+	mv -v app/build/reports/jacoco/jacocoGUITestCoverage espresso-test-coverage && \
 	$(ABC) stop-all-emulators
 
 coverage-unit-tests :
-	$(GW) -PjacocoEnabled=true clean jacocoTestReport && \
-	cp -r app/build/reports/jacoco/jacocoTestsReport unit-tests-coverage
+	$(GW) -PjacocoEnabled=true -PcarvedTests=false clean jacocoUnitTestCoverage && \
+	$(RM) -r unit-tests-coverage && \
+	mv -v app/build/reports/jacoco/jacocoUnitTestCoverage unit-tests-coverage
 
-coverage-carved-tests : copy-shadows
-	$(GW) -PjacocoEnabled=true jacocoUnitTestCoverage -PcarvedTests --info && \
-	mkdir -p carved-test-coverage && \
-	cp -r app/build/carvedTest/coverage carved-test-coverage
+# Omitted: --info
+coverage-carved-tests :
+	$(GW) -PjacocoEnabled=true -PcarvedTests=true clean jacocoUnitTestCoverage && \
+	$(RM) -r  carved-test-coverage && \
+	mv -v build/carvedTest/coverage carved-test-coverage
