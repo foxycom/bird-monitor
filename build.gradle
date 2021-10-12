@@ -26,3 +26,26 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+ext {
+    // We need to use the -P format for properties, so we need to access them using the "project" global variable
+    // So we do not use the 'System.properties.getProperty("carvedTests") ?: "false"' pattern here
+    if ( ! project.hasProperty("jacocoEnabled")) {
+        // Log a warning here
+        println("jacocoEnabled property not defined. Default it to false")
+        jacocoEnabled = "false"
+    }
+    if (! project.hasProperty("carvedTests")) {
+        println("carvedTests property not defined. Default it to false")
+        carvedTests = "false"
+    }
+
+    println "Summary  of props:"
+    println "jacocoEnabled: " + jacocoEnabled.toBoolean()
+    println "carvedTests:   " + carvedTests.toBoolean()
+
+    // Set default values here. Those may be overwritten inside app/build.gradle
+    testReportPrefix = "${buildDir}/carvedTest/testExecution"
+    coverageReportPrefix = "${buildDir}/carvedTest/coverage"
+
+}
