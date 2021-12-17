@@ -1,7 +1,9 @@
 [MakeConfiguration]
 make_app_package = nz.org.cacophony.birdmonitor
+make_app_debug_package = nz.org.cacophony.birdmonitor
 make_original_apk_path = app/build/outputs/apk/debug/Bird-Monitor-1.9.1-debug.apk
 make_android_test_apk_path = app/build/outputs/apk/androidTest/debug/Bird-Monitor-1.9.1-debug-androidTest.apk
 make_assemble_apk_command = assembleDebug
 make_assemble_android_test_command = assembleAndroidTest
 make_test_runner = nz.org.cacophony.birdmonitor.test/androidx.test.runner.AndroidJUnitRunner
+make_permissions =

@@ -46,6 +46,7 @@ clean-all :
 # Clean up Coverage
 	$(RM) -rv espresso-tests-coverage unit-tests-coverage carved-test-coverage
 	$(RM) -rv espresso-test-coverage-for-*
+	$(RM) -rv jacoco-espresso-coverage
 
 # Build the various apks
 app-original.apk : 
@@ -165,11 +166,14 @@ $(ESPRESSO_TESTS_COVERAGE):
 	@echo "Running Test $(TEST_NAME)"
 	$(GW) -PjacocoEnabled=true -PcarvedTests=false -Pandroid.testInstrumentationRunnerArguments.class=$(TEST_NAME) jacocoGUITestCoverage
 	mv -v app/build/reports/jacoco/jacocoGUITestCoverage $(COVERAGE_FOLDER)
+	mv -v app/build/outputs/code_coverage/debugAndroidTest/connected/*coverage.ec $(COVERAGE_FOLDER)/$(TEST_NAME).ec
 	
 # Phony  target
 coverage-for-each-espresso-test :  $(ESPRESSO_TESTS_COVERAGE)
 	@echo "Processing: $(shell echo $? | tr " " "\n")"
 	export ABC_CONFIG=$(ABC_CFG) && $(ABC) stop-all-emulators
+	mkdir -p jacoco-espresso-coverage
+	find espresso-test-coverage-* -type f -name "*.ec" -exec cp '{}' jacoco-espresso-coverage/ ';'
 	@echo "Done"
 
 
