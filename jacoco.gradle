@@ -68,8 +68,16 @@ task jacocoUnitTestCoverage(type: JacocoReport, dependsOn: ['testDebugUnitTest']
     group = 'Reporting'
     description = 'Generate JaCoCo coverage report for unit tests'
     reports {
-        xml.enabled = true
+        xml.enabled  = true
         html.enabled = true
+        if ( carvedTests.toBoolean() ) {
+            html.destination file("$coverageReportPrefix/html")
+            xml.destination file("$coverageReportPrefix/xml")
+        }
+        println "\n\n\n"
+        println " jacocoUnitTestCoverage: Reporting to -- " + html.destination
+        println "\n\n\n"
+
     }
     def fileFilter = ['**/R.class', '**/BuildConfig.class', '**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*']
     def coverageSourceDirs = ["${project.projectDir}/src/main/java"]

@@ -105,8 +105,40 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     testOptions {
-        animationsDisabled = true
+        unitTests {
+            includeAndroidResources = true
+        }
+
+        unitTests.all {
+
+            // Nices output on the console/logs
+            testLogging {
+                events "passed", "skipped", "failed", "standardOut", "standardError"
+                outputs.upToDateWhen {false}
+                showStandardStreams = true
+            }
+
+            test {
+                //Get last path of default set path.
+                def junitXmlTestTaskName = file("$reports.junitXml.destination").name
+                def htmlTestTaskName = file("$reports.html.destination").name
+
+                if ( carvedTests.toBoolean() ) {
+                    // Just use the same?
+                    reports.junitXml.destination = file("$testReportPrefix/$junitXmlTestTaskName")
+                    reports.html.destination = file("$testReportPrefix/$junitXmlTestTaskName")
+                }
+
+                filter {
+                    //specific test method
+                    if (project.hasProperty('carvedTestsFilter')){
+                        includeTestsMatching project.carvedTestsFilter
+                    }
+                }
+            }
+        }
     }
+
     buildToolsVersion '28.0.3'
 }
 
