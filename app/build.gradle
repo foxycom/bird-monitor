@@ -111,6 +111,8 @@ android {
 
         unitTests.all {
 
+            jvmArgs "-Xmx2g"
+
             // Nices output on the console/logs
             testLogging {
                 events "passed", "skipped", "failed", "standardOut", "standardError"
