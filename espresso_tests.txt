@@ -1,0 +1,16 @@
+nz.org.cacophony.birdmonitor.ScreenshotGen welcomeMessage
+nz.org.cacophony.birdmonitor.ScreenshotGen createUserSceenshot
+nz.org.cacophony.birdmonitor.SignInUserTest signInTest
+nz.org.cacophony.birdmonitor.GuiControlsTest enableOrDisableRecordingTest
+nz.org.cacophony.birdmonitor.GuiControlsTest frequencyRecordTest
+nz.org.cacophony.birdmonitor.GuiControlsTest frequencyUploadTest
+nz.org.cacophony.birdmonitor.GuiControlsTest internetConnectionTest
+nz.org.cacophony.birdmonitor.GuiControlsTest ignoreLowBatteryTest
+nz.org.cacophony.birdmonitor.GuiControlsTest warningSoundTest
+nz.org.cacophony.birdmonitor.RegisterPhoneTest registerPhoneTest
+nz.org.cacophony.birdmonitor.RegisterPhoneTest unRegisterPhoneTest
+nz.org.cacophony.birdmonitor.RecordAndSaveTest recordAndSaveOnPhone
+nz.org.cacophony.birdmonitor.RecordAndSaveTest recordAndSaveOnServer
+nz.org.cacophony.birdmonitor.DeleteRecordingsTest deleteRecordingsTest
+nz.org.cacophony.birdmonitor.UploadRecordingsTest uploadRecordings
+nz.org.cacophony.birdmonitor.CreateAccountTest createAccountTest
