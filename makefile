@@ -9,6 +9,7 @@ JAVA_OPTS=" -Dabc.instrument.array.operations -Dabc.instrument.fields.operations
 
 INSTRUMENTATION_OPTS=" \
 --skip-class=nz.org.cacophony.birdmonitor.R \
+--skip-class=nz.org.cacophony.birdmonitor.views.ManageRecordingsFragment \
 --filter-package=java.io \
 --filter-class=java.lang.StringBuilder \
 "
