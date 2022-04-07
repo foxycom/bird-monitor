@@ -18,18 +18,22 @@ CARVING_JAVA_OPTIONS=" \
 -Dorg.slf4j.simpleLogger.defaultLogLevel=info \
 "
 
-CARVING_OPTIONS=" \
-\
-"
+CARVING_OPTIONS=""
 
-SELECT_ONE_CARVING_OPTIONS=" \
-$(CARVING_OPTIONS) \
+SELECT_ONE_CARVING_OPTIONS=$(CARVING_OPTIONS)" \
 --selection-strategy=SELECT_ONE \
 "
 
-SELECT_ALL_CARVING_OPTIONS=" \
-$(CARVING_OPTIONS) \
+SELECT_ALL_CARVING_OPTIONS=$(CARVING_OPTIONS)" \
 --selection-strategy=SELECT_ALL \
+"
+
+SELECT_ACTIVITIES_ALL_CARVING_OPTIONS=$(CARVING_OPTIONS)" \
+--selection-strategy=SELECT_ACTIVITIES_ALL \
+"
+
+SELECT_ACTIVITIES_ONE_CARVING_OPTIONS=$(CARVING_OPTIONS)" \
+--selection-strategy=SELECT_ACTIVITIES_ONE \
 "
 
 # Default
@@ -41,10 +45,10 @@ SED := $(shell echo /usr/local/bin/gsed)
 endif
 
 ADB := $(shell $(ABC) show-config  ANDROID_ADB_EXE | sed -e "s|ANDROID_ADB_EXE=||")
-# Create a list of expected test executions from tests.txt Those corresponds to the traces
-ESPRESSO_TESTS := $(shell cat tests.txt | sed '/^[[:space:]]*$$/d' | sed -e 's| |__|g' -e 's|^\(.*\)$$|\1.testlog|')
-# Create the list of expected coverage targets from tests.txt
-ESPRESSO_TESTS_COVERAGE := $(shell cat tests.txt | sed '/^[[:space:]]*$$/d' | sed -e 's| |__|g' -e 's|^\(.*\)$$|espresso-test-coverage-for-\1/html/index.html|')
+# Create a list of expected test executions from espresso_tests.txt Those corresponds to the traces
+ESPRESSO_TESTS := $(shell cat espresso_tests.txt | sed '/^[[:space:]]*$$/d' | sed -e 's| |__|g' -e 's|^\(.*\)$$|\1.testlog|')
+# Create the list of expected coverage targets from espresso_tests.txt
+ESPRESSO_TESTS_COVERAGE := $(shell cat espresso_tests.txt | sed '/^[[:space:]]*$$/d' | sed -e 's| |__|g' -e 's|^\(.*\)$$|espresso-test-coverage-for-\1/html/index.html|')
 # Create the list of carved tests to measure coverage. This points to the html file because make works with files
 ifeq (,$(wildcard carved-tests.log))
 $(info "carved-tests.log missing. We probably need to re-run make after computing it")
@@ -107,7 +111,7 @@ $(shell if [ "$(TRACING_APKS_INSTALLED)" == "0" ]; then \
 else \
 	(>&2 echo "Resetting the data of the apk"); \
 	$(ADB) shell pm clear nz.org.cacophony.birdmonitor > /dev/null; \
-fi)
+	fi)
 $(eval TRACING_APKS_INSTALLED := 1)
 endef
 
@@ -134,7 +138,7 @@ fi)
 $(eval COVERAGE_APKS_INSTALLED := 1)
 endef
 
-.PHONY: clean-gradle clean-all carve-all run-espresso-tests trace-espresso-tests
+.PHONY: clean-gradle clean-all carve-all-select-one carve-all-select-all run-espresso-tests trace-espresso-tests
 
 show :
 	$(info $(ADB))
@@ -245,28 +249,56 @@ $(ESPRESSO_TESTS) : app-instrumented.apk app-androidTest.apk
 	@export ABC_CONFIG=$(ABC_CFG) && $(ABC) copy-traces nz.org.cacophony.birdmonitor ./traces/$(TEST_NAME) force-clean
 
 # This will always run because it's a PHONY target
-carve-all-selected-all : .carved-all-selected-all
+carve-all-select-all : .carved-all-select-all
 	@echo "Done"
 
-carve-all-select-one : .carved-all-selected-one
+carve-all-select-one : .carved-all-select-one
+	@echo "Done"
+
+carve-all-select-activities-one : .carved-all-select-activities-one
+	@echo "Done"
+
+carve-all-select-activities-all : .carved-all-select-activities-all
 	@echo "Done"
 
 # This requires to have all the tests traced. Note we create the app/src/allCarvedTest folder !
-.carved-all-selected-all : $(ESPRESSO_TESTS)
+.carved-all-select-all : $(ESPRESSO_TESTS)
 	@export ABC_CONFIG=$(ABC_CFG) && \
 	export CARVING_OPTIONS=$(SELECT_ALL_CARVING_OPTIONS) && \
+	export CARVING_JAVA_OPTIONS=$(CARVING_JAVA_OPTIONS) && \
 	$(ABC) carve-all app-original.apk traces app/src/allCarvedTest force-clean 2>&1 | tee carving.log
 	@export ABC_CONFIG=$(ABC_CFG) && $(ABC) stop-all-emulators
 # Make sure this file has the right timestamp - probably touch will work the same
-	@sleep 1; echo "" > .carved-all-selected-all
+	@sleep 1; echo "" > .carved-all-select-all
+	@sleep 1; echo "" > .carved-all
 
-.carved-all-selected-one : $(ESPRESSO_TESTS)
+.carved-all-select-one : $(ESPRESSO_TESTS)
 	@export ABC_CONFIG=$(ABC_CFG) && \
 	export CARVING_OPTIONS=$(SELECT_ONE_CARVING_OPTIONS) && \
+	export CARVING_JAVA_OPTIONS=$(CARVING_JAVA_OPTIONS) && \
 	$(ABC) carve-all app-original.apk traces app/src/allCarvedTest force-clean 2>&1 | tee carving.log
 	@export ABC_CONFIG=$(ABC_CFG) && $(ABC) stop-all-emulators
 # Make sure this file has the right timestamp - probably touch will work the same
-	@sleep 1; echo "" > .carved-all-selected-one
+	@sleep 1; echo "" > .carved-all-select-one
+	@sleep 1; echo "" > .carved-all
+	
+.carved-all-select-activities-all : $(ESPRESSO_TESTS)
+	@export ABC_CONFIG=$(ABC_CFG) && \
+	export CARVING_OPTIONS=$(SELECT_ACTIVITIES_ALL_CARVING_OPTIONS) && \
+	$(ABC) carve-all app-original.apk traces app/src/allCarvedTest force-clean 2>&1 | tee carving.log
+	@export ABC_CONFIG=$(ABC_CFG) && $(ABC) stop-all-emulators
+# Make sure this file has the right timestamp - probably touch will work the same
+	@sleep 1; echo "" > .carved-all-select-activities-all
+	@sleep 1; echo "" > .carved-all
+
+.carved-all-select-activities-one : $(ESPRESSO_TESTS)
+	@export ABC_CONFIG=$(ABC_CFG) && \
+	export CARVING_OPTIONS=$(SELECT_ACTIVITIES_ONE_CARVING_OPTIONS) && \
+	$(ABC) carve-all app-original.apk traces app/src/allCarvedTest force-clean 2>&1 | tee carving.log
+	@export ABC_CONFIG=$(ABC_CFG) && $(ABC) stop-all-emulators
+# Make sure this file has the right timestamp - probably touch will work the same
+	@sleep 1; echo "" > .carved-all-select-activities-one
+	@sleep 1; echo "" > .carved-all
 
 ### ### ### ### ### ### ###
 ### Coverage targets
