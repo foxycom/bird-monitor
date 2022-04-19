@@ -79,7 +79,10 @@ task jacocoUnitTestCoverage(type: JacocoReport, dependsOn: ['testDebugUnitTest']
         println "\n\n\n"
 
     }
-    def fileFilter = ['**/R.class', '**/BuildConfig.class', '**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*']
+    def fileFilter = [  '**/R.class', '**/BuildConfig.class', '**/R.class', '**/R$*.class', '**/BuildConfig.*',
+                        '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*',
+                        'org/fdroid/**/*.*', 'com/luckycatlabs/**/*.*'
+                        ]
     def coverageSourceDirs = ["${project.projectDir}/src/main/java"]
     getClassDirectories().setFrom(fileTree(dir: "${buildDir}/intermediates/javac/debug/classes", excludes: fileFilter))
     getSourceDirectories().setFrom(files(coverageSourceDirs))
@@ -97,7 +100,9 @@ task jacocoGUITestCoverage(type: JacocoReport, dependsOn: ['connectedDebugAndroi
         xml.enabled = true
         html.enabled = true
     }
-    def fileFilter = ['**/R.class', '**/BuildConfig.class', '**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*']
+    def fileFilter = ['**/R.class', '**/BuildConfig.class', '**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', 
+                        '**/*Test*.*', 'android/**/*.*', 'org/fdroid/**/*.*', 'com/luckycatlabs/**/*.*']
+
     def coverageSourceDirs = ["${project.projectDir}/src/main/java"]
     getClassDirectories().setFrom(fileTree(dir: "${buildDir}/intermediates/javac/debug/classes", excludes: fileFilter))
     getSourceDirectories().setFrom(files(coverageSourceDirs))
